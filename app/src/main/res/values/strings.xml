@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">GoogleMapApp</string>
+    <string name="title_activity_maps">Accident Aware</string>
+    <string name="title_disp_map">Accident Map</string>
+    <string name="map_pref">mapCameraState</string>
+</resources>
