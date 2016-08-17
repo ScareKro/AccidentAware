@@ -27,11 +27,25 @@
             android:id="@+id/MakeMapButton"
             android:clickable="false" />
 
-        <Spinner
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/DistSpinner"
-            android:contextClickable="false"/>
+            android:orientation="vertical"
+            android:layout_marginLeft="5dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Pin Radius:"
+                android:textStyle="bold"/>
+
+            <Spinner
+                android:layout_width="100dp"
+                android:layout_height="35dp"
+                android:id="@+id/DistSpinner"
+                android:contextClickable="false"
+                android:background="@drawable/dropdownsmall" />
+        </LinearLayout>
     </LinearLayout>
 
     <TextView
