@@ -171,9 +171,7 @@ public class MainActivity extends Activity {
      *
      * We also enable the update button from here regardless of whether or not we already have values
      * for the county in question. When that button is clicked we create and UpdateDB object with the
-     * county and state and call its start function.
-     *
-     * Just testing this for github
+     * county and state and call its start function
      */
     public void onSelectCounty(String county, String state){
         DatabaseManager DB = new DatabaseManager(this);

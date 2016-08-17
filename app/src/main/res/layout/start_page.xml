@@ -13,6 +13,26 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Accident Aware"
         android:id="@+id/textView" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="bottom">
+
+        <Button
+            android:layout_width="252dp"
+            android:layout_height="60dp"
+            android:text="Load Accidents"
+            android:id="@+id/MakeMapButton"
+            android:clickable="false" />
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/DistSpinner"
+            android:contextClickable="false"/>
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -23,10 +43,12 @@
         android:id="@+id/textView2" />
 
     <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="252dp"
+        android:layout_height="35dp"
         android:id="@+id/StateSpinner"
-        android:contextClickable="false"/>
+        android:contextClickable="false"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/dropdown" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -37,25 +59,11 @@
         android:id="@+id/textView3" />
 
     <Spinner
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="252dp"
+        android:layout_height="35dp"
+        android:layout_marginLeft="10dp"
+        android:background="@drawable/dropdown"
         android:id="@+id/CountySpinner" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="bottom">
-
-        <Button
-            android:layout_width="126dp"
-            android:layout_height="60dp"
-            android:text="Create Map"
-            android:id="@+id/MakeMapButton"
-            android:clickable="false" />
-
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -68,7 +76,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Update"
+            android:text="Download"
             android:id="@+id/updateButton"
             android:clickable="false"/>
 
