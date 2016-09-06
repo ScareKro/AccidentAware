@@ -47,12 +47,17 @@ public class DisplayMap extends FragmentActivity implements OnMapReadyCallback {
         county = myIntent.getStringExtra(MESSAGE1);
         state = myIntent.getStringExtra(MESSAGE2);
 
-        if (servicesOK()) {
+        MapStats tempMS = new MapStats();
+        int services = tempMS.servicesOK(this);
+        if (services == 1) {
             mMapView = (MapView) findViewById(R.id.map);
             mMapView.onCreate(SavedInstanceState);
             mMapView.getMapAsync(this);
         }
         else{
+            if(services == 2) {
+                Toast.makeText(this, "Can't connect to Google Play Services.. sucks.", Toast.LENGTH_SHORT).show();
+            }
             Toast.makeText(this, "Cannot construct map.", Toast.LENGTH_SHORT).show();
         }
     }
@@ -68,24 +73,24 @@ public class DisplayMap extends FragmentActivity implements OnMapReadyCallback {
      * If, however, we do not know what the problem is, I simply print "Can't connect...."
      * and then return false, indicating that we cannot go through with creating the map object.
      */
-    public boolean servicesOK(){
-//        int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this):
-//        The previous line is depreciated
-        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-        int isAvailable = googleAPI.isGooglePlayServicesAvailable(this);
-//        The previous two lines make up the fix for that
-
-        if(isAvailable == ConnectionResult.SUCCESS)
-            return true;
-        else if(googleAPI.isUserResolvableError(isAvailable)){
-            Dialog dialog = googleAPI.getErrorDialog(this,isAvailable,ERRORDIALOG);
-            dialog.show();
-        }
-        else{
-            Toast.makeText(this,"Can't connect to Google Play Services.. sucks.",Toast.LENGTH_SHORT).show();
-        }
-        return false;
-    }
+//    public boolean servicesOK(){
+////        int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this):
+////        The previous line is depreciated
+//        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+//        int isAvailable = googleAPI.isGooglePlayServicesAvailable(this);
+////        The previous two lines make up the fix for that
+//
+//        if(isAvailable == ConnectionResult.SUCCESS)
+//            return true;
+//        else if(googleAPI.isUserResolvableError(isAvailable)){
+//            Dialog dialog = googleAPI.getErrorDialog(this,isAvailable,ERRORDIALOG);
+//            dialog.show();
+//        }
+//        else{
+//            Toast.makeText(this,"Can't connect to Google Play Services.. sucks.",Toast.LENGTH_SHORT).show();
+//        }
+//        return false;
+//    }
 
     /**
      * onDestroy(), onLowMemory(), onPause(), onResume(), and onSaveInstanceState(Bundle outState).
@@ -150,13 +155,13 @@ public class DisplayMap extends FragmentActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         DatabaseManager DB = new DatabaseManager(this);
-        Set<String> markerList = DB.getAccidents(county, state);
-        if(markerList == null){
-            Toast.makeText(this,"You done goofed, still not working.",Toast.LENGTH_SHORT).show();
-        }
-//        markerList = new HashSet<String>(Arrays.asList("44.997158,-92.762050",
-//                        "44.992241,-92.760119",
-//                        "44.991907,-92.763338"));
+        //Set<String> markerList = DB.getAccidents(county, state);
+        //if(markerList == null){
+            //Toast.makeText(this,"You done goofed, still not working.",Toast.LENGTH_SHORT).show();
+        //}
+        Set<String> markerList = new HashSet<String>(Arrays.asList("44.997158,-92.762050",
+                        "44.992241,-92.760119",
+                        "44.991907,-92.763338"));
 
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);

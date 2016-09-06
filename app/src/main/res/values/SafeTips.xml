@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name = "safeList">
+        <item>Keep Your Distance: The more space you leave around you the less risk of collision.</item>
+        <item>More Haste Less Speed: In busy areas give yourself plenty of time, there\'s no need to speed.</item>
+        <item>Anticipate what is happening ahead of you by looking at the furthest point along the road as well as observing the behaviours of your fellow road users.</item>
+        <item>Ensuring that your vehicle is serviced regularly will help to avoid breakdowns and accidents caused by vehicle faults.</item>
+        <item>Road markings and signs are essential to the safety of the road user. Most road improvements reflect past collision history.</item>
+        <item>Although it is a familiar everyday task, driving is actually a very complex thing. Trying to do something else at the same time, is distracting.</item>
+        <item>People don’t generally hit what they see – so put yourself where you can be seen.</item>
+        <item>Damage to vehicles often happens in car parks where we least expect it. Think prevention!</item>
+        <item>Never drive whilst tired. On long journeys stop for at least a 15 minute break every 2 hours.</item>
+        <item>As experience improves, often attention levels diminish. Get to know what affects a drivers attention levels and watch for those who are affected.</item>
+    </string-array>
+</resources>

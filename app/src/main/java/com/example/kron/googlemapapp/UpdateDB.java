@@ -120,6 +120,6 @@ public class UpdateDB extends AppCompatActivity{
      * Called by the mHandler so that the accident list can be passed out of the new thread.
      */
     public void toDatabase(Set<String> serverMsg){
-        DB.createAccidentDB(serverMsg, county, state);
+        //DB.createAccidentDB(serverMsg, county, state);
     }
 }

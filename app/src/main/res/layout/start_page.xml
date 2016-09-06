@@ -13,10 +13,23 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Accident Aware"
         android:id="@+id/textView" />
+    <fragment
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="10dp"
+        android:layout_width="350dp"
+        android:layout_height="110dp"
+        android:layout_weight="0.65"
+        android:layout_gravity="center"
+        android:id="@+id/map"
+        class="com.google.android.gms.maps.MapFragment"/>
+        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--xmlns:map="http://schemas.android.com/apk/res-auto"-->
+        <!--xmlns:tools="http://schemas.android.com/tools"-->
+        <!--android:name="com.google.android.gms.maps.SupportMapFragment"-->
+        <!--tools:context="com.example.kron.googlemapapp.MainActivity"/>-->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="bottom">
 
@@ -25,7 +38,7 @@
             android:layout_height="60dp"
             android:text="Load Accidents"
             android:id="@+id/MakeMapButton"
-            android:clickable="false" />
+            android:clickable="false"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -47,58 +60,22 @@
                 android:background="@drawable/dropdownsmall" />
         </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Select State:"
-        android:textStyle="bold"
-        android:id="@+id/textView2" />
-
-    <Spinner
-        android:layout_width="252dp"
-        android:layout_height="35dp"
-        android:id="@+id/StateSpinner"
-        android:contextClickable="false"
-        android:layout_marginLeft="10dp"
-        android:background="@drawable/dropdown" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Select County"
-        android:textStyle="bold"
-        android:id="@+id/textView3" />
-
-    <Spinner
-        android:layout_width="252dp"
-        android:layout_height="35dp"
-        android:layout_marginLeft="10dp"
-        android:background="@drawable/dropdown"
-        android:id="@+id/CountySpinner" />
-
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:layout_marginBottom="15dp"
-        android:gravity="bottom">
-
-        <Button
-            android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight=".35"
+        android:gravity="bottom"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Download"
-            android:id="@+id/updateButton"
-            android:clickable="false"/>
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Delete"
-            android:id="@+id/deleteButton"
-            android:clickable="false" /></LinearLayout>
+            android:textStyle="bold"
+            android:id="@+id/SafeTips"
+            android:padding="15dp"
+            android:text="blahblahblah\nblahblah"
+            android:background="@drawable/frame"
+            android:textColor="#fff"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+    </LinearLayout>
 
 </LinearLayout>
