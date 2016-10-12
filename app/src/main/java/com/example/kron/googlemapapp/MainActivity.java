@@ -2,80 +2,46 @@ package com.example.kron.googlemapapp;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.DataSetObserver;
 import android.graphics.Color;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.DhcpInfo;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
-import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
-import java.util.Set;
 
 // extends FragmentActivity implements OnMapReadyCallback
 public class MainActivity extends FragmentActivity implements
@@ -93,7 +59,7 @@ public class MainActivity extends FragmentActivity implements
     protected LocationManager locationManager;
     protected Location lastLocation;
     Circle myRadius;
-    WifiManager wifi;
+//    WifiManager wifi;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -112,7 +78,7 @@ public class MainActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_page); //Load our front page.
 
-        wifi = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+//        wifi = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 
         //Create the spinner the user can use to determine the radius around their location the accidents will be loaded.
         radiusSpinner = (Spinner) findViewById(R.id.DistSpinner);
@@ -149,12 +115,6 @@ public class MainActivity extends FragmentActivity implements
         });
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .addApi(ActivityRecognition.API)
-                .build();
 
         //Wipe anything saved from before.
         DatabaseManager DB = new DatabaseManager(this);
@@ -166,6 +126,7 @@ public class MainActivity extends FragmentActivity implements
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
+                    .addApi(ActivityRecognition.API)
                     .build();
         }
 
@@ -217,14 +178,14 @@ public class MainActivity extends FragmentActivity implements
     /**
      * Necessary for internet functionality.
      */
-    private InetAddress getBroadcastAddress() throws IOException {
-        DhcpInfo dhcp = wifi.getDhcpInfo();
-        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
-        byte[] quads = new byte[4];
-        for (int k = 0; k < 4; k++)
-            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-        return InetAddress.getByAddress(quads);
-    }
+//    private InetAddress getBroadcastAddress() throws IOException {
+//        DhcpInfo dhcp = wifi.getDhcpInfo();
+//        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+//        byte[] quads = new byte[4];
+//        for (int k = 0; k < 4; k++)
+//            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+//        return InetAddress.getByAddress(quads);
+//    }
 
     /**
      * When the application is opened from being minimized rather than shut down.
@@ -285,36 +246,6 @@ public class MainActivity extends FragmentActivity implements
             return;
         }
         myMap.setMyLocationEnabled(true);
-//        Log.v(TAG, "handlePermissionsAndGetLocation");
-//        int hasWriteContactsPermission = 0;
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-//            hasWriteContactsPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
-//            if (hasWriteContactsPermission != PackageManager.PERMISSION_GRANTED) {
-//                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
-//                return;
-//            }
-//        }
-//        Log.v(TAG, "GetLocation");
-//        int LOCATION_REFRESH_TIME = 1000;
-//        int LOCATION_REFRESH_DISTANCE = 5;
-//
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this, "Need proper permissions", Toast.LENGTH_SHORT).show();
-//            return;
-//        } else {
-//            Log.v(TAG, "Has permission");
-//            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME, LOCATION_REFRESH_DISTANCE, locationListener);
-//        }
-
-//        googleMap.setMyLocationEnabled(true);
-//
-//        Location mLastLocation;
-//        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(client);
-//        if(mLastLocation != null){
-//            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), 10));
-//        }
-
     }
 
     @Override
@@ -365,11 +296,16 @@ public class MainActivity extends FragmentActivity implements
 
     }
 
+    /**
+     * The location listener as the name may suggest listens to the location data sent by the Google Maps
+     * API. We wait for the location to be changed by an amount set by the getLocation() method then
+     * update the map's camera position and the position of the circle.
+     */
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
             Log.v(TAG, "Location Change");
-            myRadius.remove();
+//            myRadius.remove();
             LatLng ll = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 16));
             myRadius = drawCircle(ll);
@@ -388,6 +324,14 @@ public class MainActivity extends FragmentActivity implements
         }
     };
 
+    /**
+     * This is called automatically when the maps functionality is set up (well when connected, but neither here nor there).
+     * We are using it to move the map's focus to the user's current position, zoom in on them, and build a circle
+     * around them with a radius set by the drop-down menu.
+     *
+     * Due to the way it is currently set up, this method is also called (in a fashion) after the user selects a
+     * new radius on the drop-down menu to get more immediate feedback.
+     */
     @Override
     public void onConnected(Bundle bundle) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
