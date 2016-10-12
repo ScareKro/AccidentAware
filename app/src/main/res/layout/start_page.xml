@@ -76,6 +76,7 @@
             android:background="@drawable/frame"
             android:textColor="#fff"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
+            <!--android:textStyle="bold"-->
     </LinearLayout>
 
 </LinearLayout>

@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name = "radiiList">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-        <item>9</item>
-        <item>10</item>
-        <item>11</item>
-        <item>12</item>
+        <item>0.1 km</item>
+        <item>0.2 km</item>
+        <item>0.3 km</item>
+        <item>0.4 km</item>
+        <item>0.5 km</item>
+        <item>0.6 km</item>
+        <item>0.7 km</item>
+        <item>0.8 km</item>
+        <item>0.9 km</item>
+        <item>1.0 km</item>
     </string-array>
 </resources>

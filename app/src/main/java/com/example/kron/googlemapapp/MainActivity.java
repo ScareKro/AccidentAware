@@ -8,6 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
+import android.graphics.Color;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.DhcpInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -18,6 +23,7 @@ import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,13 +43,21 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -62,31 +76,30 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
-// extends FragmentActivity implements OnMapReadyCallback
-public class MainActivity extends Activity{
 
-    //    private boolean map = false;
-//    private static final int ERRORDIALOG = 9001;
-//    private GoogleMap mMap;
-//    private MapView mMapView;
-//    private CameraUpdate update = null;
-//    private MarkerOptions[] marker;
+// extends FragmentActivity implements OnMapReadyCallback
+public class MainActivity extends FragmentActivity implements
+        ConnectionCallbacks, OnConnectionFailedListener, OnMapReadyCallback {
+    //OnMapReadyCallback, ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
+
     private Spinner radiusSpinner;
     private Intent myIntent = null;
     private final static String MESSAGE1 = "com.example.kron.googlemapapp.county",
             MESSAGE2 = "com.example.kron.googlemapapp.state";
-    //private ArrayAdapter<String> stateSpinnerAdapter;
     Thread m_objThreadClient;
     int port = 3447;
     Socket clientSocket;
+    public static final String TAG = "KRON_";
+    protected LocationManager locationManager;
+    protected Location lastLocation;
+    Circle myRadius;
     WifiManager wifi;
-    private GoogleMap mMap;
-    private MapView mMapView;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+    protected GoogleMap myMap;
 
     /**
      * onCreate, this is the first method that will be run when our app is installed. It defines what
@@ -98,13 +111,11 @@ public class MainActivity extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_page); //Load our front page.
-//        final DatabaseManager DB = new DatabaseManager(this);
-//        createAlphaDB();
 
         wifi = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 
         //Create the spinner the user can use to determine the radius around their location the accidents will be loaded.
-        radiusSpinner = (Spinner)findViewById(R.id.DistSpinner);
+        radiusSpinner = (Spinner) findViewById(R.id.DistSpinner);
         ArrayAdapter<String> radiusSpinnerAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_dropdown_item,
                 getResources().getStringArray(R.array.radiiList));
@@ -127,35 +138,66 @@ public class MainActivity extends Activity{
                 return false;                           //For some reason if this is not false the dropdown will stop working entirely.
             }
         });
+        radiusSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                handlePermissionsAndGetLocation();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent){}
+        });
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        client = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .addApi(ActivityRecognition.API)
+                .build();
 
         //Wipe anything saved from before.
         DatabaseManager DB = new DatabaseManager(this);
         DB.clearPrefs();
 
+        // Create an instance of GoogleAPIClient.
+        if (client == null) {
+            client = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
+        /**
+         * bottomText basically refers to the helpful little driving tips that will be randomly
+         * chosen each time the front page of the app is opened. It is not super important to the functionality
+         * of the application, but it is a fun little thing to add a level of polish to the app.
+         */
         TextView bottomText = (TextView) findViewById(R.id.SafeTips);
         String[] textOptions = getResources().getStringArray(R.array.safeList);
         Random r = new Random();
         int i1 = r.nextInt(10 - 0) + 1;
-        bottomText.setText(textOptions[i1-1]);
+        bottomText.setText(textOptions[i1 - 1]);
 
 
-//        //Build the example map
-//        MapStats tempMS = new MapStats();
-//        int services = tempMS.servicesOK(this);
-//        if(services == 1){
-//            mMapView = (MapView) findViewById(R.id.map);
-//            mMapView.onCreate(savedInstanceState);
-//            mMapView.getMapAsync(this);
+//        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            return;
 //        }
-//        else{
-//            if(services == 2) {
-//                Toast.makeText(this, "Can't connect to Google Play Services.. sucks.", Toast.LENGTH_SHORT).show();
-//            }
-//            Toast.makeText(this, "Cannot construct map.", Toast.LENGTH_SHORT).show();
-//        }
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        /**
+         * Build the little map in the center of the screen.
+         */
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        /**
+         * Going to get location information so the map can be adjusted.
+         */
+        handlePermissionsAndGetLocation();
+
     }
 
     /**
@@ -172,9 +214,11 @@ public class MainActivity extends Activity{
         startActivity(myIntent);
     }
 
+    /**
+     * Necessary for internet functionality.
+     */
     private InetAddress getBroadcastAddress() throws IOException {
         DhcpInfo dhcp = wifi.getDhcpInfo();
-
         int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
         byte[] quads = new byte[4];
         for (int k = 0; k < 4; k++)
@@ -182,43 +226,47 @@ public class MainActivity extends Activity{
         return InetAddress.getByAddress(quads);
     }
 
+    /**
+     * When the application is opened from being minimized rather than shut down.
+     */
     @Override
     public void onStart() {
         super.onStart();
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.example.kron.googlemapapp/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
+//        Action viewAction = Action.newAction(
+//                Action.TYPE_VIEW, // TODO: choose an action type.
+//                "Main Page", // TODO: Define a title for the content shown.
+//                // TODO: If you have web page content that matches this app activity's content,
+//                // make sure this auto-generated web page URL is correct.
+//                // Otherwise, set the URL to null.
+//                Uri.parse("http://host/path"),
+//                // TODO: Make sure this auto-generated app deep link URI is correct.
+//                Uri.parse("android-app://com.example.kron.googlemapapp/http/host/path")
+//        );
+//        AppIndex.AppIndexApi.start(client, viewAction);
     }
 
+    /**
+     * When the app is minimized.
+     */
     @Override
     public void onStop() {
         super.onStop();
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.example.kron.googlemapapp/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
+//        Action viewAction = Action.newAction(
+//                Action.TYPE_VIEW, // TODO: choose an action type.
+//                "Main Page", // TODO: Define a title for the content shown.
+//                // TODO: If you have web page content that matches this app activity's content,
+//                // make sure this auto-generated web page URL is correct.
+//                // Otherwise, set the URL to null.
+//                Uri.parse("http://host/path"),
+//                // TODO: Make sure this auto-generated app deep link URI is correct.
+//                Uri.parse("android-app://com.example.kron.googlemapapp/http/host/path")
+//        );
+//        AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
 
@@ -230,16 +278,155 @@ public class MainActivity extends Activity{
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
-//    @Override
-//    public void onMapReady(GoogleMap googleMap) {
-//        mMap = googleMap;
-//        mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        myMap = googleMap;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        myMap.setMyLocationEnabled(true);
+//        Log.v(TAG, "handlePermissionsAndGetLocation");
+//        int hasWriteContactsPermission = 0;
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+//            hasWriteContactsPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+//            if (hasWriteContactsPermission != PackageManager.PERMISSION_GRANTED) {
+//                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
+//                return;
+//            }
+//        }
+//        Log.v(TAG, "GetLocation");
+//        int LOCATION_REFRESH_TIME = 1000;
+//        int LOCATION_REFRESH_DISTANCE = 5;
 //
 //        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this,"Need proper permissions",Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Need proper permissions", Toast.LENGTH_SHORT).show();
 //            return;
+//        } else {
+//            Log.v(TAG, "Has permission");
+//            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME, LOCATION_REFRESH_DISTANCE, locationListener);
 //        }
-//        mMap.setMyLocationEnabled(true);
-//    }
+
+//        googleMap.setMyLocationEnabled(true);
+//
+//        Location mLastLocation;
+//        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(client);
+//        if(mLastLocation != null){
+//            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()), 10));
+//        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 123:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //Accepted
+                    getLocation();
+                } else {
+                    // Denied
+                    Toast.makeText(MainActivity.this, "LOCATION Denied", Toast.LENGTH_SHORT)
+                            .show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void handlePermissionsAndGetLocation() {
+        Log.v(TAG, "handlePermissionsAndGetLocation");
+        int hasWriteContactsPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (hasWriteContactsPermission != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    123);
+            return;
+        }
+        getLocation();//if already has permission
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    protected void getLocation() {
+        Log.v(TAG, "GetLocation");
+        int LOCATION_REFRESH_TIME = 300;
+        int LOCATION_REFRESH_DISTANCE = 2;
+
+        if (!(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            Log.v(TAG, "Has permission");
+            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                    LOCATION_REFRESH_DISTANCE, locationListener);
+        } else {
+            Log.v(TAG, "Does not have permission");
+        }
+
+    }
+
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            Log.v(TAG, "Location Change");
+            myRadius.remove();
+            LatLng ll = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 16));
+            myRadius = drawCircle(ll);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+    };
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        lastLocation = LocationServices.FusedLocationApi.getLastLocation(client);
+        if (lastLocation != null) {
+            Log.v(TAG, "Location Set");
+            LatLng ll = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 16));
+            myRadius = drawCircle(ll);
+        }
+    }
+
+    /**
+     * Method draws a circle around the user's current location.
+     * TODO: set the radius of the circle equal to the range that pins will be fetched.
+     * @param ll - LatLng of the current location.
+     * @return returns the circle object.
+     */
+    private Circle drawCircle(LatLng ll){
+        String tmpText = radiusSpinner.getSelectedItem().toString();
+        Float selectedRadius = Float.parseFloat(tmpText.substring(0,3))*1000;
+        CircleOptions options = new CircleOptions()
+                .center(ll)
+                .radius(selectedRadius)
+                .fillColor(0x335e5e5e)
+                .strokeColor(Color.GRAY)
+                .strokeWidth(10);
+        return myMap.addCircle(options);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
 }
 
